@@ -64,41 +64,44 @@ if [ -f "$SETTINGS_FILE" ]; then
     echo "   You can restore your old settings from this file if needed."
 fi
 
-# Merge rounded UI settings into existing settings using Node.js
-SCRIPT_DIR="$SCRIPT_DIR" SETTINGS_FILE="$SETTINGS_FILE" node -e '
-const fs = require("fs");
+# Merge rounded UI settings into existing settings using Python
+SCRIPT_DIR="$SCRIPT_DIR" SETTINGS_FILE="$SETTINGS_FILE" python3 -c '
+import json, os, re
 
-const userPath = process.env.SETTINGS_FILE;
-const srcPath = require("path").join(process.env.SCRIPT_DIR, "settings.json");
+user_path = os.environ["SETTINGS_FILE"]
+src_path = os.path.join(os.environ["SCRIPT_DIR"], "settings.json")
 
-let user = {};
-if (fs.existsSync(userPath)) {
-    try {
-        let raw = fs.readFileSync(userPath, "utf8");
-        raw = raw.replace(/^\s*\/\/.*$/gm, "");
-        raw = raw.replace(/,\s*([\]}])/g, "$1");
-        user = JSON.parse(raw);
-    } catch (e) {
-        console.error("Warning: Could not parse existing settings.json, starting fresh");
-        user = {};
-    }
-}
+user = {}
+if os.path.exists(user_path):
+    try:
+        raw = open(user_path).read()
+        raw = re.sub(r"^\s*//.*$", "", raw, flags=re.MULTILINE)
+        raw = re.sub(r",\s*([\]}])", r"\1", raw)
+        user = json.loads(raw)
+    except Exception:
+        print("Warning: Could not parse existing settings.json, starting fresh")
+        user = {}
 
-let src = JSON.parse(fs.readFileSync(srcPath, "utf8").replace(/^\s*\/\/.*$/gm, "").replace(/,\s*([\]}])/g, "$1"));
+raw = open(src_path).read()
+raw = re.sub(r"^\s*//.*$", "", raw, flags=re.MULTILINE)
+raw = re.sub(r",\s*([\]}])", r"\1", raw)
+src = json.loads(raw)
 
-for (const [key, value] of Object.entries(src)) {
-    if (key.startsWith("//")) continue;
-    if (key === "custom-ui-style.stylesheet" && typeof value === "object") {
-        user[key] = value;
-    } else if (key === "workbench.colorCustomizations" && typeof value === "object") {
-        if (!user[key] || typeof user[key] !== "object") user[key] = {};
-        Object.assign(user[key], value);
-    } else {
-        user[key] = value;
-    }
-}
+for key, value in src.items():
+    if key.startswith("//"):
+        continue
+    if key == "custom-ui-style.stylesheet" and isinstance(value, dict):
+        user[key] = value
+    elif key == "workbench.colorCustomizations" and isinstance(value, dict):
+        if not isinstance(user.get(key), dict):
+            user[key] = {}
+        user[key].update(value)
+    else:
+        user[key] = value
 
-fs.writeFileSync(userPath, JSON.stringify(user, null, 2) + "\n");
+with open(user_path, "w") as f:
+    json.dump(user, f, indent=2)
+    f.write("\n")
 '
 echo -e "${GREEN}✓ Rounded UI settings merged into your config${NC}"
 
