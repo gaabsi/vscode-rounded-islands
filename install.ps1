@@ -53,6 +53,14 @@ try {
 }
 
 try {
+    $output = code --install-extension GitHub.github-vscode-theme --force 2>&1
+    Write-Host "GitHub Dark Dimmed theme installed" -ForegroundColor Green
+} catch {
+    Write-Host "Could not install GitHub Dark Dimmed theme automatically" -ForegroundColor Yellow
+    Write-Host "   Please install it manually from the Extensions marketplace"
+}
+
+try {
     $output = code --install-extension beardedbear.beardedicons --force 2>&1
     Write-Host "Bearded Icons extension installed" -ForegroundColor Green
 } catch {

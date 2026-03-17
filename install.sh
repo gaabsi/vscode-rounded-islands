@@ -38,6 +38,13 @@ else
     echo "   Please install it manually from the Extensions marketplace"
 fi
 
+if code --install-extension GitHub.github-vscode-theme --force; then
+    echo -e "${GREEN}✓ GitHub Dark Dimmed theme installed${NC}"
+else
+    echo -e "${YELLOW}⚠️  Could not install GitHub Dark Dimmed theme automatically${NC}"
+    echo "   Please install it manually from the Extensions marketplace"
+fi
+
 if code --install-extension beardedbear.beardedicons --force; then
     echo -e "${GREEN}✓ Bearded Icons extension installed${NC}"
 else
