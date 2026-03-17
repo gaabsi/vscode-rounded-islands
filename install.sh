@@ -38,10 +38,10 @@ else
     echo "   Please install it manually from the Extensions marketplace"
 fi
 
-if code --install-extension catppuccin.catppuccin-vsc-icons --force; then
-    echo -e "${GREEN}✓ Catppuccin Icons extension installed${NC}"
+if code --install-extension beardedbear.beardedicons --force; then
+    echo -e "${GREEN}✓ Bearded Icons extension installed${NC}"
 else
-    echo -e "${YELLOW}⚠️  Could not install Catppuccin Icons extension automatically${NC}"
+    echo -e "${YELLOW}⚠️  Could not install Bearded Icons extension automatically${NC}"
     echo "   Please install it manually from the Extensions marketplace"
 fi
 

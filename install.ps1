@@ -53,10 +53,10 @@ try {
 }
 
 try {
-    $output = code --install-extension catppuccin.catppuccin-vsc-icons --force 2>&1
-    Write-Host "Catppuccin Icons extension installed" -ForegroundColor Green
+    $output = code --install-extension beardedbear.beardedicons --force 2>&1
+    Write-Host "Bearded Icons extension installed" -ForegroundColor Green
 } catch {
-    Write-Host "Could not install Catppuccin Icons extension automatically" -ForegroundColor Yellow
+    Write-Host "Could not install Bearded Icons extension automatically" -ForegroundColor Yellow
     Write-Host "   Please install it manually from the Extensions marketplace"
 }
 

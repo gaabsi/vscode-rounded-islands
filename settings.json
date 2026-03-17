@@ -22,7 +22,7 @@
     "editorBracketHighlight.foreground5": "#569cd6",
     "editorBracketHighlight.foreground6": "#C586C0"
   },
-  "workbench.iconTheme": "catppuccin-latte",
+  "workbench.iconTheme": "bearded-icons",
   "workbench.tree.indent": 16,
   "workbench.tree.renderIndentGuides": "always",
   "editor.minimap.showSlider": "always",
@@ -161,7 +161,7 @@
       "outline": "none !important"
    },
     ".monaco-workbench.linux .part.editor > .content": {
-      "padding-top": "20px !important"
+      "padding-top": "0px !important"
    },
     ".part.editor": {
       "margin": "var(--islands-panel-top) var(--islands-panel-gap) var(--islands-panel-gap)",
