@@ -599,7 +599,7 @@
     },
     ".notebook-toolbar-container": {
       "margin-left": "var(--islands-panel-gap) !important",
-      "margin-right": "var(--islands-panel-gap) !important",
+      "margin-right": "calc(var(--islands-panel-gap) * 3) !important",
       "align-items": "center !important"
     },
     ".part.editor .content": {
@@ -729,6 +729,9 @@
     },
     ".notebook-toolbar-container .kernel-label": {
       "color": "var(--islands-fg-fixed) !important"
+    },
+    ".notebook-toolbar-container .kernel-action-view-item": {
+      "margin-right": "calc(var(--islands-panel-gap) * 3) !important"
     },
     ".monaco-highlighted-label": {
       "color": "var(--islands-fg-fixed) !important"

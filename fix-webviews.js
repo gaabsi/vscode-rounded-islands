@@ -24,6 +24,15 @@
     var editorRect = getEditorRect();
     if (!editorRect) return;
 
+    // Le notebookOverlay contient la toolbar — width clamp + overflow:hidden la crop
+    // On utilise clip-path à la place pour le padding droite/bas
+    if (el.classList.contains('notebookOverlay')) {
+      el.style.setProperty('clip-path',
+        'inset(0 ' + GAP + 'px ' + GAP + 'px ' + GAP + 'px round 0 0 ' + RADIUS + 'px ' + RADIUS + 'px)',
+        'important');
+      return;
+    }
+
     var elTop = parseFloat(el.style.top || 0);
     var maxWidth = editorRect.right - rawLeft - GAP;
     if (parseFloat(el.style.width || 0) > maxWidth) {
