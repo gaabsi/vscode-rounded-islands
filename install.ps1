@@ -1,11 +1,11 @@
-# Rounded Islands — Rounded UI Installer for Windows
+# Rounded Islands — UI Installer for Windows
 
 param()
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Rounded Islands — Rounded UI Installer for Windows" -ForegroundColor Cyan
-Write-Host "====================================================" -ForegroundColor Cyan
+Write-Host "Rounded Islands — UI Installer for Windows" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Check if VS Code is installed
@@ -42,8 +42,16 @@ Write-Host "VS Code CLI found" -ForegroundColor Green
 # Get the directory where this script is located
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+# Determine VS Code settings directory
+$settingsDir = "$env:APPDATA\Code\User"
+if (-not (Test-Path $settingsDir)) {
+    New-Item -ItemType Directory -Path $settingsDir -Force | Out-Null
+}
+$settingsFile = Join-Path $settingsDir "settings.json"
+
+# Step 1: Install required extension
 Write-Host ""
-Write-Host "Step 1: Installing extensions..."
+Write-Host "Step 1: Installing Custom UI Style extension..."
 try {
     $output = code --install-extension subframe7536.custom-ui-style --force 2>&1
     Write-Host "Custom UI Style extension installed" -ForegroundColor Green
@@ -52,66 +60,53 @@ try {
     Write-Host "   Please install it manually from the Extensions marketplace"
 }
 
-try {
-    $output = code --install-extension GitHub.github-vscode-theme --force 2>&1
-    Write-Host "GitHub Dark Dimmed theme installed" -ForegroundColor Green
-} catch {
-    Write-Host "Could not install GitHub Dark Dimmed theme automatically" -ForegroundColor Yellow
-    Write-Host "   Please install it manually from the Extensions marketplace"
-}
-
-try {
-    $output = code --install-extension beardedbear.beardedicons --force 2>&1
-    Write-Host "Bearded Icons extension installed" -ForegroundColor Green
-} catch {
-    Write-Host "Could not install Bearded Icons extension automatically" -ForegroundColor Yellow
-    Write-Host "   Please install it manually from the Extensions marketplace"
-}
-
 Write-Host ""
-Write-Host "Step 2: Applying rounded UI settings..."
-$settingsDir = "$env:APPDATA\Code\User"
-if (-not (Test-Path $settingsDir)) {
-    New-Item -ItemType Directory -Path $settingsDir -Force | Out-Null
+Write-Host "Step 1b: Installing Bearded Icons theme..."
+try {
+    $output = code --install-extension BeardedBear.beardedicons --force 2>&1
+    Write-Host "Bearded Icons theme installed" -ForegroundColor Green
+} catch {
+    Write-Host "Could not install Bearded Icons automatically" -ForegroundColor Yellow
+    Write-Host "   Please install it manually from the Extensions marketplace"
 }
 
-$settingsFile = Join-Path $settingsDir "settings.json"
+# Step 2: Copy fix-webviews.js
+Write-Host ""
+Write-Host "Step 2: Installing webview fix script..."
+Copy-Item "$scriptDir\fix-webviews.js" "$settingsDir\fix-webviews.js" -Force
+Write-Host "Webview fix script installed" -ForegroundColor Green
 
-# Backup existing settings if they exist
+# Step 3: Backup and merge settings
+Write-Host ""
+Write-Host "Step 3: Applying rounded UI settings..."
+
 if (Test-Path $settingsFile) {
     $backupFile = "$settingsFile.pre-rounded-islands"
     Copy-Item $settingsFile $backupFile -Force
     Write-Host "Existing settings.json backed up to:" -ForegroundColor Yellow
     Write-Host "   $backupFile"
-    Write-Host "   You can restore your old settings from this file if needed."
 }
 
-# Merge rounded UI settings into existing settings using Python
-$srcPath = Join-Path $scriptDir "settings.json"
-$env:SETTINGS_FILE = $settingsFile
+# Merge settings using Python
 $env:SCRIPT_DIR = $scriptDir
+$env:SETTINGS_FILE = $settingsFile
+python -c @"
+import json, os
 
-python3 -c @"
-import json, os, re
-
-user_path = os.environ['SETTINGS_FILE']
+settings_path = os.environ['SETTINGS_FILE']
 src_path = os.path.join(os.environ['SCRIPT_DIR'], 'settings.json')
 
 user = {}
-if os.path.exists(user_path):
+if os.path.exists(settings_path):
     try:
-        raw = open(user_path).read()
-        raw = re.sub(r'^\s*//.*$', '', raw, flags=re.MULTILINE)
-        raw = re.sub(r',\s*([\]}])', r'\1', raw)
-        user = json.loads(raw)
-    except Exception:
+        with open(settings_path) as f:
+            user = json.load(f)
+    except json.JSONDecodeError:
         print('Warning: Could not parse existing settings.json, starting fresh')
         user = {}
 
-raw = open(src_path).read()
-raw = re.sub(r'^\s*//.*$', '', raw, flags=re.MULTILINE)
-raw = re.sub(r',\s*([\]}])', r'\1', raw)
-src = json.loads(raw)
+with open(src_path) as f:
+    src = json.load(f)
 
 for key, value in src.items():
     if key.startswith('//'):
@@ -119,23 +114,25 @@ for key, value in src.items():
     if key == 'custom-ui-style.stylesheet' and isinstance(value, dict):
         user[key] = value
     elif key == 'workbench.colorCustomizations' and isinstance(value, dict):
-        if not isinstance(user.get(key), dict):
+        if key not in user or not isinstance(user[key], dict):
             user[key] = {}
         user[key].update(value)
     else:
         user[key] = value
 
-with open(user_path, 'w') as f:
+settings_dir = os.path.dirname(settings_path)
+js_path = os.path.join(settings_dir, 'fix-webviews.js')
+user['custom-ui-style.external.imports'] = ['file://' + js_path]
+
+with open(settings_path, 'w') as f:
     json.dump(user, f, indent=2)
     f.write('\n')
 "@
-
 Write-Host "Rounded UI settings merged into your config" -ForegroundColor Green
 
+# Step 4: Reload VS Code
 Write-Host ""
-Write-Host "Step 3: Reloading VS Code..."
-
-# Quit VS Code and relaunch so Custom UI Style fully initializes
+Write-Host "Step 4: Reloading VS Code..."
 Write-Host "   Closing VS Code..." -ForegroundColor Cyan
 Stop-Process -Name "Code" -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 3
@@ -151,3 +148,7 @@ Write-Host "   - You may see a 'corrupt installation' warning — this is normal
 Write-Host "   - Click the gear icon and select 'Don't Show Again'"
 Write-Host "   - Your original settings are backed up with .pre-rounded-islands extension"
 Write-Host ""
+Write-Host "If the CSS customizations are not applied, open the Command Palette" -ForegroundColor Yellow
+Write-Host "(Ctrl+Shift+P) and run: Custom UI Style: Reload" -ForegroundColor Yellow
+
+Start-Sleep -Seconds 3
