@@ -562,6 +562,15 @@
       "background": "linear-gradient(135deg, rgba(49,50,56,0.7), rgba(37,38,44,0.5)) !important",
       "box-shadow": "inset 0 0 0 1px rgba(255,255,255,0.06) !important"
     },
+    ".editor-group-container .tabs-container + .scrollbar": {
+      "display": "none !important"
+    },
+    ".notebookOverlay .scrollbar.horizontal": {
+      "display": "none !important"
+    },
+    ".notebookOverlay .scrollbar.vertical": {
+      "display": "none !important"
+    },
     ".scrollbar .slider": {
       "border-radius": "9999px !important",
       "transition": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important",
@@ -625,6 +634,15 @@
       "clip-path": "inset(0 18px var(--islands-panel-gap) var(--islands-panel-gap) round 0 0 var(--islands-panel-radius) var(--islands-panel-radius)) !important"
     },
     ".cell-inner-container": {
+      "border-radius": "var(--islands-item-radius) !important"
+    },
+    ".cursor": {
+      "border-radius": "2px !important",
+      "transform": "scaleY(0.8) !important"
+    },
+    ".cell-editor-container .view-overlays .current-line": {
+      "width": "auto !important",
+      "right": "34px !important",
       "border-radius": "var(--islands-item-radius) !important"
     },
     ".cell-editor-container": {
